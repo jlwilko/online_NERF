@@ -22,12 +22,13 @@ pip install -r requirements.txt
 - update camera parameters
 - update paths to LearnLFOdo dataset
 - make new branch
+- write parsing function for transformation matrices (annotations)
+- run odom pipeline on my dataset
+  - will need to fix coordinate frame issue
 
 # What should be done next 
 
-- run odom pipeline on my dataset
---- by TODAY --- 
-  - will need to fix coordinate frame issue
+- figure out how to plot odom better to ensure im getting good results
   - also fix scaling issue
 - install and run instantNGP
 - run instantNGP on LearnLFOdo dataset ground truths
