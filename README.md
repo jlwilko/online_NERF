@@ -4,14 +4,11 @@
 
 Create virtual environment for the visual odometry in the `vo/monoVO-python/` directory:
 
-TODO: maybe update to use requirements.txt
-
 ```bash
+cd vo/monoVO-python/
 python3 -m venv env
 source env/bin/activate
-cd vo/monoVO-python/
-pip install numpy opencv
-pip install opencv-python
+pip install -r requirements.txt
 ```
 
 # What have I done
