@@ -1,22 +1,25 @@
 import numpy as np
 import cv2
+import glob
 
 from visual_odometry import PinholeCamera, VisualOdometry
 
+base_path = "/home/josh/Documents/uni/2023_2/thesis/online_NERF/data/LearnLFOdo_Dataset_renormalised/core/seq2/"
 
-cam = PinholeCamera(1241.0, 376.0, 718.8560, 718.8560, 607.1928, 185.2157)
+
+cam = PinholeCamera(256, 192, 197.68828, 197.68828, 127.033999, 91.16238)
 vo = VisualOdometry(
     cam,
-    "/home/josh/Documents/uni/2023_2/thesis/online_NERF/data/dataset/poses/00.txt",
+    base_path + "poses_gt_base_cam_renorm.npy",
 )
 
 traj = np.zeros((600, 600, 3), dtype=np.uint8)
 
-for img_id in range(4541):
+# count the number of images in the directory with glob
+image_count = len(glob.glob1(base_path + "0/", "*.png"))
+for img_id in range(image_count):
     img = cv2.imread(
-        "/home/josh/Documents/uni/2023_2/thesis/online_NERF/data/dataset/sequences/00/image_0/"
-        + str(img_id).zfill(6)
-        + ".png",
+        base_path + "0/" + str(img_id).zfill(10) + ".png",
         0,
     )
 
