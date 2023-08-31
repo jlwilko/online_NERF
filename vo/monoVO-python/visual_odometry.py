@@ -55,15 +55,17 @@ class VisualOdometry:
         self.detector = cv2.FastFeatureDetector_create(
             threshold=25, nonmaxSuppression=True
         )
-        with open(annotations) as f:
-            self.annotations = f.readlines()
+        annotations_mat = np.load(annotations)
+        self.annotations = annotations_mat[:, :3, :4].reshape(-1, 12)
+        print(self.annotations)
+
 
     def getAbsoluteScale(self, frame_id):  # specialized for KITTI odometry dataset
-        ss = self.annotations[frame_id - 1].strip().split()
+        ss = self.annotations[frame_id - 1]
         x_prev = float(ss[3])
         y_prev = float(ss[7])
         z_prev = float(ss[11])
-        ss = self.annotations[frame_id].strip().split()
+        ss = self.annotations[frame_id]
         x = float(ss[3])
         y = float(ss[7])
         z = float(ss[11])
@@ -115,7 +117,7 @@ class VisualOdometry:
             E, self.px_cur, self.px_ref, focal=self.focal, pp=self.pp
         )
         absolute_scale = self.getAbsoluteScale(frame_id)
-        if absolute_scale > 0.1:
+        if absolute_scale > 0.001:
             self.cur_t = self.cur_t + absolute_scale * self.cur_R.dot(t)
             self.cur_R = self.cur_R.dot(R)
         if self.px_ref.shape[0] < kMinNumFeature:
