@@ -30,19 +30,21 @@ for img_id in range(image_count):
         x, y, z = cur_t[0], cur_t[1], cur_t[2]
     else:
         x, y, z = 0.0, 0.0, 0.0
-    draw_x, draw_y = int(x) + 290, int(z) + 90
-    true_x, true_y = int(vo.trueX) + 290, int(vo.trueZ) + 90
+    draw_x, draw_y = int(x*100) + 290, int(z*100) + 90
+    true_x, true_y = int(vo.trueX*100) + 290, int(vo.trueY*100) + 90
+    print(f"x: {x}, y: {y}, z: {z}")
+    print(f"trueX: {vo.trueX}, trueY: {vo.trueY}, trueZ: {vo.trueZ}")
 
     cv2.circle(
         traj,
         (draw_x, draw_y),
         1,
-        (img_id * 255 / 4540, 255 - img_id * 255 / 4540, 0),
+        (img_id * 255 / image_count, 255 - img_id * 255 / image_count, 0),
         1,
     )
     cv2.circle(traj, (true_x, true_y), 1, (0, 0, 255), 2)
     cv2.rectangle(traj, (10, 20), (600, 60), (0, 0, 0), -1)
-    text = "Coordinates: x=%2fm y=%2fm z=%2fm" % (x, y, z)
+    text = "Coordinates: x=%2fcm y=%2fcm z=%2fcm" % (x, y, z)
     cv2.putText(traj, text, (20, 40), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1, 8)
 
     cv2.imshow("Road facing camera", img)
@@ -50,3 +52,4 @@ for img_id in range(image_count):
     cv2.waitKey(1)
 
 cv2.imwrite("map.png", traj)
+cv2.waitKey(0)
