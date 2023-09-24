@@ -2,16 +2,14 @@
 
 ## Setup
 
-The first step is to clone the thirdparty repositories under the `thirdparty` directory. Run the below commands:
+Create virtual environment for the visual odometry in the `vo/monoVO-python/` directory:
 
 ```bash
-git clone --recursive https://github.com/luigifreda/pyslam.git
-git checkout ubuntu20
+cd vo/monoVO-python/
+python3 -m venv env
+source env/bin/activate
+pip install -r requirements.txt
 ```
-
-Then initially to build the virtual environment: `. install_all_venv.sh`
-
-Once build, activation is as follows: `. pyenv-activate.sh` and `deactivate` to exit
 
 # What have I done
 
