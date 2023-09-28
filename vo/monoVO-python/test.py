@@ -4,21 +4,21 @@ import glob
 import matplotlib.pyplot as plt
 from visual_odometry import PinholeCamera, VisualOdometry
 
-base_path = "/home/josh/Documents/uni/2023_2/thesis/online_NERF/data/LearnLFOdo_Dataset_renormalised/core/seq6/"
+base_path = "/home/josh/Documents/uni/2023_2/thesis/online_NERF/data/lfodo/core/seq6/"
 # base_path = "/home/josh/Documents/uni/2023_2/thesis/online_NERF/data/LearnLFOdo_Dataset_renormalised/core/seq44/"
 
 
 cam = PinholeCamera(256, 192, 197.68828, 197.68828, 127.033999, 91.16238)
 vo = VisualOdometry(
     cam,
-    base_path + "poses_gt_base_cam_renorm.npy",
+    base_path + "poses_gt_first_cam_renorm.npy",
 )
 
 traj = np.zeros((600, 600, 3), dtype=np.uint8)
 
 
 # count the number of images in the directory with glob
-image_count = len(glob.glob1(base_path + "0/", "*.png"))
+image_count = len(glob.glob1(base_path + "8/", "*.png"))
 
 t_path = np.zeros((image_count, 3))
 R_path = np.zeros((image_count, 4, 4))
@@ -27,17 +27,15 @@ t_gt = np.zeros((image_count, 3))
 
 for img_id in range(image_count):
     img = cv2.imread(
-        base_path + "0/" + str(img_id).zfill(10) + ".png",
+        base_path + "8/" + str(img_id).zfill(10) + ".png",
         0,
     )
 
     vo.update(img, img_id)
 
     # R_path[img_id] = vo.cur_R
-    t_gt[img_id] = np.array((vo.trueX, vo.trueY, -vo.trueZ))
+    t_gt[img_id] = np.array((vo.trueX, vo.trueY, vo.trueZ))
     cur_t = vo.cur_t.T.flatten() if img_id >= 2 else t_gt[img_id]
-    print(cur_t)
-    t_path[img_id] = cur_t[[0,2,1]]
 
 
     if img_id > 2:
