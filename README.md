@@ -15,8 +15,25 @@ pip install -r requirements.txt
 
 - more playing around with visual odometry 
 - fixed issue where resolution was very low = i was just downsampling by 10x after an initial investigation so nws there
-- prepping results so expectations for those next week
+- download KITTI and install basic visual odom pipeline
+- sync KITTI dataset to `fraser`
+- figure out odom pipeline on KITTI dataset
+- commit working code to github
+- update camera parameters
+- update paths to LearnLFOdo dataset
+- make new branch
+- write parsing function for transformation matrices (annotations)
+- run odom pipeline on my dataset
+  - will need to fix coordinate frame issue
 
-- instantNGP on the way, no real roadblocks but just haven't put in the time yet
+# What should be done next 
 
+- figure out how to plot odom better to ensure im getting good results
+  - also fix scaling issue
+- install and run instantNGP
+- run instantNGP on LearnLFOdo dataset ground truths
+- run instantNGP on LearnLFOdo odometry data
 
+- generate results for presentation and report later o 
+- figure out plan for next 2 weeks
+--- by end of TOMORROW ---
