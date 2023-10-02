@@ -16,9 +16,6 @@ def main():
     ViewId = [i for i in range(len(data))]
     Location = [i[order,3] for i in data]
     Rotation = [i[0:3,order] for i in data]
-    # print(ViewId)
-    # print(Location)
-    # print(Rotation)
 
     # create dictionary
     data = {'ViewId': ViewId, 'Location': Location, 'Orientation': Rotation}
