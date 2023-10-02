@@ -1,3 +1,0 @@
-[submodule "nerf/instant-ngp"]
-	path = nerf/instant-ngp
-	url = https://github.com/NVlabs/instant-ngp

@@ -7,11 +7,12 @@ images = imageDatastore("../../data/lfodo/core/seq" + sequence + "/8/");
 load("../../data/lfodo/core/seq" + sequence + "/poses_gt_first_cam_renorm.mat");
 data.ViewId = num2cell(data.ViewId);
 data.Location = num2cell(data.Location.*100,2);
-data.Orientation = permute(data.Orientation, [2,3,1])
-data.Orientation = num2cell(data.Orientation,[1,2]);
-data.Orientation = squeeze(data.Orientation);
+rotations = cell([length(data.ViewId),1]);
+for i = 1:length(data.ViewId)
+    rotations{i} = reshape(data.Orientation(i, :, :),3,3)';
+end
 
-groundTruthPoses = table(data.ViewId', data.Location, data.Orientation, VariableNames=["ViewId", "Location", "Orientation"]);
+groundTruthPoses = table(data.ViewId', data.Location, rotations, VariableNames=["ViewId", "Location", "Orientation"]);
 % Create an empty imageviewset object to manage the data associated with each view.
 vSet = imageviewset;
 
@@ -30,7 +31,7 @@ intrinsics = cameraIntrinsics(focalLength, principalPoint, imageSize);
 prevI = undistortImage(im2gray(Irgb), intrinsics); 
 
 % Detect features. 
-prevPoints = detectSURFFeatures(prevI, MetricThreshold=1000);
+prevPoints = detectSURFFeatures(prevI, MetricThreshold=800);
 
 % Select a subset of features, uniformly distributed throughout the image.
 numPoints = 200;
@@ -38,7 +39,7 @@ prevPoints = selectUniform(prevPoints, numPoints, size(prevI));
 
 % Extract features. Using 'Upright' features improves matching quality if 
 % the camera motion involves little or no in-plane rotation.
-prevFeatures = extractFeatures(prevI, prevPoints, Upright=true);
+prevFeatures = extractFeatures(prevI, prevPoints);
 
 % Add the first view. Place the camera associated with the first view
 % at the origin, oriented along the Z-axis.
@@ -167,8 +168,8 @@ for viewId = 3:15
     
     % Refine camera poses using bundle adjustment.
     [~, camPoses] = bundleAdjustment(xyzPoints, tracks, camPoses, ...
-        intrinsics, PointsUndistorted=true, AbsoluteTolerance=1e-12,...
-        RelativeTolerance=1e-12, MaxIterations=200, FixedViewID=1);
+        intrinsics, PointsUndistorted=true, AbsoluteTolerance=1e-9,...
+        RelativeTolerance=1e-9, MaxIterations=200, FixedViewID=1);
         
     vSet = updateView(vSet, camPoses); % Update view set.
     

@@ -7,11 +7,12 @@ images = imageDatastore("../../data/lfodo/core/seq" + sequence + "/8/");
 load("../../data/lfodo/core/seq" + sequence + "/poses_gt_first_cam_renorm.mat");
 data.ViewId = num2cell(data.ViewId);
 data.Location = num2cell(data.Location.*100,2);
-data.Orientation = permute(data.Orientation, [2,3,1])
-data.Orientation = num2cell(data.Orientation,[1,2]);
-data.Orientation = squeeze(data.Orientation);
+rotations = cell([length(data.ViewId),1]);
+for i = 1:length(data.ViewId)
+    rotations{i} = reshape(data.Orientation(i, :, :),3,3)';
+end
 
-groundTruthPoses = table(data.ViewId', data.Location, data.Orientation, VariableNames=["ViewId", "Location", "Orientation"]);
+groundTruthPoses = table(data.ViewId', data.Location, rotations, VariableNames=["ViewId", "Location", "Orientation"]);
 % Create an empty imageviewset object to manage the data associated with each view.
 vSet = imageviewset;
 
@@ -38,7 +39,7 @@ prevPoints = selectUniform(prevPoints, numPoints, size(prevI));
 
 % Extract features. Using 'Upright' features improves matching quality if 
 % the camera motion involves little or no in-plane rotation.
-prevFeatures = extractFeatures(prevI, prevPoints, Upright=true);
+prevFeatures = extractFeatures(prevI, prevPoints, upright=true);
 
 % Add the first view. Place the camera associated with the first view
 % at the origin, oriented along the Z-axis.
