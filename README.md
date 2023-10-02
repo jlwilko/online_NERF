@@ -1,39 +1,23 @@
 # Towards Online NeRF
 
-## Setup
+# Building the container:
 
-Create virtual environment for the visual odometry in the `vo/monoVO-python/` directory:
+To build the container initially:
 
-```bash
-cd vo/monoVO-python/
-python3 -m venv env
-source env/bin/activate
-pip install -r requirements.txt
-```
+`docker build -t instantngp -f .devcontainer/Dockerfile .`
 
-# What have I done
+Once that completes, run `./init-ngp-container` to start the container
 
-- more playing around with visual odometry 
-- fixed issue where resolution was very low = i was just downsampling by 10x after an initial investigation so nws there
-- download KITTI and install basic visual odom pipeline
-- sync KITTI dataset to `fraser`
-- figure out odom pipeline on KITTI dataset
-- commit working code to github
-- update camera parameters
-- update paths to LearnLFOdo dataset
-- make new branch
-- write parsing function for transformation matrices (annotations)
-- run odom pipeline on my dataset
-  - will need to fix coordinate frame issue
 
-# What should be done next 
+# Useful commands and scripts
 
-- figure out how to plot odom better to ensure im getting good results
-  - also fix scaling issue
-- install and run instantNGP
-- run instantNGP on LearnLFOdo dataset ground truths
-- run instantNGP on LearnLFOdo odometry data
+- to generate instant-ngp style `transforms.json` by running COLMAP, run this command from the directory where you would like transforms.json to be generated:  
 
-- generate results for presentation and report later o 
-- figure out plan for next 2 weeks
---- by end of TOMORROW ---
+`python3 /volume/scripts/colmap2nerf.py --run_colmap --colmap_camera_model PINHOLE --images 8/ --aabb_scale 2`
+
+- to generate TUM style trajectories for ATE and RPE metrics: 
+
+- run `./init-ngp-container` to start the instant-ngp container
+
+- to run instant-ngp with a gui on a training dataset, all that is required is the `transforms.json` file that tells which images to train on and camera parameters i.e. `./instant-ngp path/to/transforms.json`
+

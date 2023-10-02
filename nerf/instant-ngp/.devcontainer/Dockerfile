@@ -90,3 +90,5 @@ RUN echo "Installing COLMAP ver. ${COLMAP_VERSION}..." \
 	&& make -j \
 	&& make install \
 	&& colmap -h
+
+RUN pip3 install opencv-contrib-python
