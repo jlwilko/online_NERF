@@ -38,6 +38,7 @@ def parse_args():
 
 	parser.add_argument("--nerf_compatibility", action="store_true", help="Matches parameters with original NeRF. Can cause slowness and worse results on some scenes, but helps with high PSNR on synthetic scenes.")
 	parser.add_argument("--test_transforms", default="", help="Path to a nerf style transforms json from which we will compute PSNR.")
+	parser.add_argument("--train_extrinsics", default=True, type=bool, help="Whether to backpropagate extrinsics as a trainable parameter. Default: True.")
 	parser.add_argument("--near_distance", default=-1, type=float, help="Set the distance from the camera at which training rays start for nerf. <0 means use ngp default")
 	parser.add_argument("--exposure", default=0.0, type=float, help="Controls the brightness of the image. Positive numbers increase brightness, negative numbers decrease it.")
 
@@ -140,7 +141,9 @@ if __name__ == "__main__":
 
 	testbed.nerf.render_with_lens_distortion = True
 
-	testbed.nerf.training.optimize_extrinsics = True
+	train_extrinsics = args.train_extrinsics
+	print(f"Training extrinsics: {train_extrinsics}")
+	testbed.nerf.training.optimize_extrinsics = train_extrinsics
 
 	network_stem = os.path.splitext(os.path.basename(args.network))[0] if args.network else "base"
 	if testbed.mode == ngp.TestbedMode.Sdf:
@@ -283,7 +286,7 @@ if __name__ == "__main__":
 		print(args.screenshot_frames)
 		for idx in args.screenshot_frames:
 			f = ref_transforms["frames"][int(idx)]
-			cam_matrix = f.get("transform_matrix", f["transform_matrix_start"])
+			cam_matrix = f.get("transform_matrix")
 			testbed.set_nerf_camera_matrix(np.matrix(cam_matrix)[:-1,:])
 			outname = os.path.join(args.screenshot_dir, os.path.basename(f["file_path"]))
 
@@ -303,7 +306,9 @@ if __name__ == "__main__":
 			os.makedirs(os.path.dirname(outname), exist_ok=True)
 		write_image(outname + ".png", image)
 
-    # TODO write out trained extrinsics here for future reference
+	# TODO write out trained extrinsics here for future reference
+	for idx in range(testbed.nerf.training.dataset.n_images):
+		print(testbed.nerf.training.get_camera_extrinsics(idx))
 
 	if args.video_camera_path:
 		testbed.load_camera_path(args.video_camera_path)
