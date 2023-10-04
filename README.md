@@ -1,4 +1,4 @@
-# Towards Online NeRF
+# Towards Online NeRF for mobile robotics
 
 # Building the container:
 
