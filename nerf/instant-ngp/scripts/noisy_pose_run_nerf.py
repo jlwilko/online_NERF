@@ -38,7 +38,8 @@ def parse_args():
 
 	parser.add_argument("--nerf_compatibility", action="store_true", help="Matches parameters with original NeRF. Can cause slowness and worse results on some scenes, but helps with high PSNR on synthetic scenes.")
 	parser.add_argument("--test_transforms", default="", help="Path to a nerf style transforms json from which we will compute PSNR.")
-	parser.add_argument("--train_extrinsics", default=True, type=bool, help="Whether to backpropagate extrinsics as a trainable parameter. Default: True.")
+	parser.add_argument("--extrinsics_export_path", default="", help="File path to write when exporting extrinsics.")
+	parser.add_argument("--train_extrinsics", default=False, action="store_true", help="Whether to backpropagate extrinsics as a trainable parameter. Default: False.")
 	parser.add_argument("--near_distance", default=-1, type=float, help="Set the distance from the camera at which training rays start for nerf. <0 means use ngp default")
 	parser.add_argument("--exposure", default=0.0, type=float, help="Controls the brightness of the image. Positive numbers increase brightness, negative numbers decrease it.")
 
@@ -208,6 +209,21 @@ if __name__ == "__main__":
 					old_training_step = testbed.training_step
 					tqdm_last_update = now
 
+	if args.extrinsics_export_path:
+	# TODO write out trained extrinsics here for future reference
+		extrinsics_kitti = []
+		for idx in range(testbed.nerf.training.dataset.n_images):
+			extrinsics = testbed.nerf.training.get_camera_extrinsics(idx)
+			path = testbed.nerf.training.dataset.paths[idx]
+			flat_extrinsics = np.array(extrinsics).flatten()
+			extrinsics_kitti.append(flat_extrinsics)
+			print((path, flat_extrinsics))
+		
+		with open(args.extrinsics_export_path, "w") as f:
+			for extrinsics in extrinsics_kitti:
+				f.write(" ".join([str(x) for x in extrinsics]) + "\n")
+			# print(i,testbed.nerf.training.get_camera_extrinsics(idx))
+
 	if args.save_snapshot:
 		os.makedirs(os.path.dirname(args.save_snapshot), exist_ok=True)
 		testbed.save_snapshot(args.save_snapshot, False)
@@ -305,10 +321,6 @@ if __name__ == "__main__":
 		if os.path.dirname(outname) != "":
 			os.makedirs(os.path.dirname(outname), exist_ok=True)
 		write_image(outname + ".png", image)
-
-	# TODO write out trained extrinsics here for future reference
-	for idx in range(testbed.nerf.training.dataset.n_images):
-		print(testbed.nerf.training.get_camera_extrinsics(idx))
 
 	if args.video_camera_path:
 		testbed.load_camera_path(args.video_camera_path)
