@@ -19,8 +19,7 @@ Once that completes, run `./init-ngp-container` to start the container
 - to run instant-ngp with a gui on a training dataset, all that is required is the `transforms.json` file that tells which images to train on and camera parameters i.e. `./instant-ngp path/to/transforms.json`
 - to script running instant-ngp without a gui, run: `/volume/scripts/noisy_pose_run_nerf.py path/to/transforms.json --n_steps 25000 --screenshot_transforms path/to/transforms/to/screenshot.json --screenshot_dir output --test_transforms path/to/test/transforms.json --train_extrinsic`
 
-- `rsync -rvnc /home/josh/Documents/uni/2023_2/thesis/online_NERF/data/lfodo/ josh@stockton:/home/josh/Documents/uni/2023_2/thesis/online_NERF/data/lfodo/` will check if there is any different in any file in the trees for the dataset where I'm generating all of my results
-
+- `rsync -rvnc --delete /home/josh/Documents/uni/2023_2/thesis/online_NERF/data/lfodo/ josh@stockton:/home/josh/Documents/uni/2023_2/thesis/online_NERF/data/lfodo/` will check if there is any different in any file in the trees for the dataset where I'm generating all of my results - will delete results that i have deleted from `fraser` so be careful
 
 ## Notes
 - if some of the corners/sides of the images are being cut off then change the aabb_scale parameter in the transforms.json
