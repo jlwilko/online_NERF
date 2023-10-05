@@ -190,6 +190,12 @@ def closest_point_2_lines(oa, da, ob, db): # returns point closest to both rays 
 		tb = 0
 	return (oa+ta*da+ob+tb*db) * 0.5, denom
 
+def train_test_split(i):
+	if i % 10 == 0:
+		return "test"
+	else:
+		return "train"
+
 if __name__ == "__main__":
 	args = parse_args()
 	if args.video_in != "":
@@ -317,6 +323,7 @@ if __name__ == "__main__":
 			}
 
 		up = np.zeros(3)
+		rng = np.random.default_rng()
 		for line in f:
 			line = line.strip()
 			if line[0] == "#":
@@ -337,6 +344,22 @@ if __name__ == "__main__":
 				tvec = np.array(tuple(map(float, elems[5:8])))
 				R = qvec2rotmat(-qvec)
 				t = tvec.reshape([3,1])
+
+				# only add noise to the training set
+				if train_test_split(i//2) == "train":
+					
+					# add normally distributed noise to rotations equal to args.rotation_sigma degrees
+					r = Rotation.from_matrix(R)
+					angles = r.as_euler('zyx', degrees=True)
+
+					angles += rng.normal(0, args.rotation_sigma, 3)
+					r = Rotation.from_euler('zyx', angles, degrees=True)
+					R = r.as_matrix()
+
+					# add normally distributed noise to translation equal to args.translation_sigma meters/mm?
+					# print(t)
+					t += rng.normal(0, args.translation_sigma, (3,1))
+
 				m = np.concatenate([np.concatenate([R, t], 1), bottom], 0)
 				c2w = np.linalg.inv(m)
 				if not args.keep_colmap_coords:
@@ -409,9 +432,10 @@ if __name__ == "__main__":
 	train_frames = []
 	test_frames = []
 	for idx, frame in enumerate(out["frames"]):
-		if idx % 10 == 0:
+		if train_test_split(idx) == "test":
 			test_frames.append(frame)
 		else:
+			assert train_test_split(idx) == "train"
 			train_frames.append(frame)
 
 	print(len(train_frames))
