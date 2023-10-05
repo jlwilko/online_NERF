@@ -20,6 +20,7 @@ import math
 import cv2
 import os
 import shutil
+from scipy.spatial.transform import Rotation
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 SCRIPTS_FOLDER = os.path.join(ROOT_DIR, "scripts")
@@ -41,6 +42,9 @@ def parse_args():
 	parser.add_argument("--skip_early", default=0, help="Skip this many images from the start.")
 	parser.add_argument("--keep_colmap_coords", action="store_true", help="Keep transforms.json in COLMAP's original frame of reference (this will avoid reorienting and repositioning the scene for preview and rendering).")
 	parser.add_argument("--out", default="transforms.json", help="Output path.")
+	parser.add_argument("--rotation_sigma", default=0, type=float,  help="stddev of rotation noise on each axis.")
+	parser.add_argument("--translation_sigma", default=0, type=float,  help="stddev of translation noise on each axis.")
+	parser.add_argument("--gt-kitti", default="", help="path to write ground truth poses to")
 	parser.add_argument("--vocab_path", default="", help="Vocabulary tree path.")
 	parser.add_argument("--overwrite", action="store_true", help="Do not ask for confirmation for overwriting existing images and COLMAP data.")
 	parser.add_argument("--mask_categories", nargs="*", type=str, default=[], help="Object categories that should be masked out from the training images. See `scripts/category2id.json` for supported categories.")
@@ -338,7 +342,7 @@ if __name__ == "__main__":
 				image_rel = os.path.relpath(IMAGE_FOLDER)
 				name = str(f"./{image_rel}/{'_'.join(elems[9:])}")
 				b = sharpness(name)
-				print(name, "sharpness=",b)
+				# print(name, "sharpness=",b)
 				image_id = int(elems[0])
 				qvec = np.array(tuple(map(float, elems[1:5])))
 				tvec = np.array(tuple(map(float, elems[5:8])))
@@ -451,6 +455,17 @@ if __name__ == "__main__":
 	print(f"writing {OUT_PATH}_test.json")
 	with open(OUT_PATH+"_test.json", "w") as outfile:
 		json.dump(out, outfile, indent=2)
+
+
+	if args.gt_kitti != "":
+		gt_transforms = []
+		for frame in train_frames:
+			gt_transforms.append((frame["file_path"], np.array(frame["transform_matrix"]).flatten()[0:12]))
+		gt_transforms.sort(key=lambda x: x[0])
+		print(gt_transforms)
+		with open(args.gt_kitti, "w") as outfile:
+			for file_path, transform in gt_transforms:
+				outfile.write(" ".join([str(x) for x in transform]) + "\n")
 
 	if len(args.mask_categories) > 0:
 		# Check if detectron2 is installed. If not, install it.
