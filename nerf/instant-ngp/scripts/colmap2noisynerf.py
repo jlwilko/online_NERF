@@ -462,7 +462,7 @@ if __name__ == "__main__":
 		for frame in train_frames:
 			gt_transforms.append((frame["file_path"], np.array(frame["transform_matrix"]).flatten()[0:12]))
 		gt_transforms.sort(key=lambda x: x[0])
-		print(gt_transforms)
+		# print(gt_transforms)
 		with open(args.gt_kitti, "w") as outfile:
 			for file_path, transform in gt_transforms:
 				outfile.write(" ".join([str(x) for x in transform]) + "\n")
