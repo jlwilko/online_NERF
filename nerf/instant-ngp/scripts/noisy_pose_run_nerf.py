@@ -39,7 +39,10 @@ def parse_args():
 	parser.add_argument("--nerf_compatibility", action="store_true", help="Matches parameters with original NeRF. Can cause slowness and worse results on some scenes, but helps with high PSNR on synthetic scenes.")
 	parser.add_argument("--test_transforms", default="", help="Path to a nerf style transforms json from which we will compute PSNR.")
 	parser.add_argument("--extrinsics_export_path", default="", help="File path to write when exporting extrinsics.")
+	parser.add_argument("--numerical_results_path", default="", help="File path to write to when exporting results.")
 	parser.add_argument("--train_extrinsics", default=False, action="store_true", help="Whether to backpropagate extrinsics as a trainable parameter. Default: False.")
+	parser.add_argument("--rotational_noise", default=-1, type=float, help="Set the amount of noise to add to the camera rotation. <0 means use ngp default.")
+	parser.add_argument("--translation_noise", default=-1, type=float, help="Set the amount of noise to add to the camera rotation. <0 means use ngp default.")
 	parser.add_argument("--near_distance", default=-1, type=float, help="Set the distance from the camera at which training rays start for nerf. <0 means use ngp default")
 	parser.add_argument("--exposure", default=0.0, type=float, help="Controls the brightness of the image. Positive numbers increase brightness, negative numbers decrease it.")
 
@@ -161,7 +164,7 @@ if __name__ == "__main__":
 		# color space. This messes not only with background
 		# alpha, but also with DOF effects and the likes.
 		# We support this behavior, but we only enable it
-		# for the case of synthetic nerf data where we need
+		# for the case of synthetic nerf d			rot_noise = ata where we need
 		# to compare PSNR numbers to results of prior work.
 		testbed.color_space = ngp.ColorSpace.SRGB
 
@@ -287,6 +290,16 @@ if __name__ == "__main__":
 		psnr = totpsnr/(totcount or 1)
 		ssim = totssim/(totcount or 1)
 		print(f"PSNR={psnr} [min={minpsnr} max={maxpsnr}] SSIM={ssim}")
+
+	# Export line of results to csv file for directory:
+	if args.numerical_results_path:
+		from datetime import datetime 
+		with open(args.numerical_results_path, "a") as f:
+			# write current date and time, sequence number, no. training steps, extrinsics optimised or not, rot noise, trans noise, psnr, minpsnr, maxpsnr, ssim, 
+			now = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+			curr_dir = os.getcwd()
+			seq_no = os.path.basename(os.path.normpath(curr_dir))[3:]
+			f.write(f"{now}, {seq_no}, {n_steps}, {train_extrinsics}, {args.rotational_noise}, {args.translation_noise}, {psnr}, {minpsnr}, {maxpsnr}, {ssim}\n")
 
 	if args.save_mesh:
 		res = args.marching_cubes_res or 256
