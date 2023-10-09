@@ -22,6 +22,7 @@ from scenes import *
 
 from tqdm import tqdm
 
+import lpips
 import pyngp as ngp # noqa
 
 def parse_args():
@@ -256,6 +257,8 @@ if __name__ == "__main__":
 		testbed.shall_train = False
 		testbed.load_training_data(args.test_transforms)
 
+		loss_fn_alex = lpips.LPIPS(net='alex')
+
 		with tqdm(range(testbed.nerf.training.dataset.n_images), unit="images", desc=f"Rendering test frame") as t:
 			for i in t:
 				resolution = testbed.nerf.training.dataset.metadata[i].resolution
@@ -277,6 +280,11 @@ if __name__ == "__main__":
 				R = np.clip(linear_to_srgb(ref_image[...,:3]), 0.0, 1.0)
 				mse = float(compute_error("MSE", A, R))
 				ssim = float(compute_error("SSIM", A, R))
+				# convert image to tensor and scale to [-1 1]
+				A = torch.from_numpy(A.transpose([2, 0, 1])).unsqueeze(0).float().cuda()
+				R = torch.from_numpy(R.transpose([2, 0, 1])).unsqueeze(0).float().cuda()
+				lpips = float(loss_fn_alex(A,R))
+				print(lpips)
 				totssim += ssim
 				totmse += mse
 				psnr = mse2psnr(mse)
