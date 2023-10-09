@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   instant-ngp:
-    image: instantngp:latest
+    image: instantngp-lzma:latest
     build:
       context: ..
       dockerfile: ./.devcontainer/Dockerfile

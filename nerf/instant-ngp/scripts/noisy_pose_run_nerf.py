@@ -23,6 +23,7 @@ from scenes import *
 from tqdm import tqdm
 
 import lpips
+import torch
 import pyngp as ngp # noqa
 
 def parse_args():
@@ -83,6 +84,12 @@ def get_scene(scene):
 		if scene in scenes:
 			return scenes[scene]
 	return None
+
+def normalize(v):
+	minimum = np.min(v)
+	maximum = np.max(v)
+	res =  np.interp(v, [minimum, maximum], [-1, 1])
+	return np.float32(res)
 
 if __name__ == "__main__":
 	args = parse_args()
@@ -281,13 +288,15 @@ if __name__ == "__main__":
 				mse = float(compute_error("MSE", A, R))
 				ssim = float(compute_error("SSIM", A, R))
 
-				print(A)
 				# convert image to tensor and scale to [-1 1]
-				image1_t = np.array(A)
-				image2_t = np.array(R)
+				image1_t = normalize(np.array(A).transpose(2,0,1))
+				image2_t = normalize(np.array(R).transpose(2,0,1))
+				
+				#torchify
+				image1_t = torch.from_numpy(image1_t)
+				image2_t = torch.from_numpy(image2_t)
 
-				lpips = float(loss_fn_alex.forward(image1_t, image2_t, normalize=True))
-				print(lpips)
+				lpips = float(loss_fn_alex(image1_t, image2_t).flatten())
 				totssim += ssim
 				totmse += mse
 				psnr = mse2psnr(mse)
@@ -300,7 +309,7 @@ if __name__ == "__main__":
 		psnr_avgmse = mse2psnr(totmse/(totcount or 1))
 		psnr = totpsnr/(totcount or 1)
 		ssim = totssim/(totcount or 1)
-		print(f"PSNR={psnr} [min={minpsnr} max={maxpsnr}] SSIM={ssim}")
+		print(f"PSNR={psnr} [min={minpsnr} max={maxpsnr}] SSIM={ssim}, LPIPS={lpips}")
 
 	# Export line of results to csv file for directory:
 	if args.numerical_results_path:

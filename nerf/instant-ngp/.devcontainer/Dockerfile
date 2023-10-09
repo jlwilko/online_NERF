@@ -2,7 +2,7 @@ FROM nvidia/cuda:11.2.2-devel-ubuntu20.04
 
 ENV COLMAP_VERSION=3.7
 ENV CMAKE_VERSION=3.21.0
-ENV PYTHON_VERSION=3.7.0
+ENV PYTHON_VERSION=3.7.2
 ENV OPENCV_VERSION=4.5.5.62
 ENV CERES_SOLVER_VERSION=2.0.0
 
@@ -47,6 +47,8 @@ RUN echo "Installing apt packages..." \
 	libsuitesparse-dev \
 	python3-setuptools \
 	libreadline-gplv2-dev \
+    liblzma-dev \ 
+    lzma \
 	&& apt autoremove -y \
 	&& apt clean -y \
 	&& export DEBIAN_FRONTEND=dialog
@@ -92,3 +94,4 @@ RUN echo "Installing COLMAP ver. ${COLMAP_VERSION}..." \
 	&& colmap -h
 
 RUN pip3 install opencv-contrib-python
+RUN pip3 install lpips
