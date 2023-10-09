@@ -13,10 +13,10 @@ cd /volume/data/lfodo/core/seq$seq_no
 pwd
 
 # define a list of noise values to add for translational noise
-# trans_noise_list="0.0 0.01 0.02 0.05 0.1 0.15 0.2"
-# rot_noise_list="0.0 0.1 0.5 1 2 5 10"
-trans_noise_list="0.1"
+trans_noise_list="0.0 0.01 0.02 0.05 0.1 0.15 0.20 0.5"
 rot_noise_list="0.0"
+# trans_noise_list="0.0"
+# rot_noise_list="0.0 0.1 0.2 0.5 1 2 5 10"
 
 # loop over each time in the sequence
 for trans_noise in $trans_noise_list; do
@@ -41,7 +41,11 @@ for trans_noise in $trans_noise_list; do
         --screenshot_dir ${res_dir}/poseopt/ \
         --test_transforms ${filename}_test.json \
         --train_extrinsic \
-        --extrinsics_export_path ${res_dir}/opt_extrinsics.txt
+        --extrinsics_export_path ${res_dir}/opt_extrinsics.txt \
+        --rotational_noise $rot_noise \
+        --translation_noise $trans_noise \
+        --numerical_results_path results.csv
+
 
         python3 /volume/scripts/noisy_pose_run_nerf.py \
         ${filename}_train.json \
@@ -49,6 +53,9 @@ for trans_noise in $trans_noise_list; do
         --screenshot_transforms ${filename}_test.json \
         --screenshot_dir ${res_dir}/noopt/ \
         --test_transforms ${filename}_test.json \
-        --extrinsics_export_path ${res_dir}/noisy_extrinsics.txt
+        --extrinsics_export_path ${res_dir}/noisy_extrinsics.txt \
+        --rotational_noise $rot_noise \
+        --translation_noise $trans_noise \
+        --numerical_results_path results.csv
     done 
 done
