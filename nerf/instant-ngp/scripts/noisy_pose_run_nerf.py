@@ -310,7 +310,7 @@ if __name__ == "__main__":
 			now = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
 			curr_dir = os.getcwd()
 			seq_no = os.path.basename(os.path.normpath(curr_dir))[3:]
-			f.write(f"{now},{seq_no},{n_steps},{train_extrinsics},{args.rotational_noise},{args.translation_noise},{psnr},{minpsnr},{maxpsnr},{ssim}\n")
+			f.write(f"{now},{seq_no},{n_steps},{train_extrinsics},{args.rotational_noise},{args.translation_noise},{lpips},{psnr},{minpsnr},{maxpsnr},{ssim}\n")
 
 	if args.save_mesh:
 		res = args.marching_cubes_res or 256
