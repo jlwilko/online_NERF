@@ -280,10 +280,13 @@ if __name__ == "__main__":
 				R = np.clip(linear_to_srgb(ref_image[...,:3]), 0.0, 1.0)
 				mse = float(compute_error("MSE", A, R))
 				ssim = float(compute_error("SSIM", A, R))
+
+				print(A)
 				# convert image to tensor and scale to [-1 1]
-				A = torch.from_numpy(A.transpose([2, 0, 1])).unsqueeze(0).float().cuda()
-				R = torch.from_numpy(R.transpose([2, 0, 1])).unsqueeze(0).float().cuda()
-				lpips = float(loss_fn_alex(A,R))
+				image1_t = np.array(A)
+				image2_t = np.array(R)
+
+				lpips = float(loss_fn_alex.forward(image1_t, image2_t, normalize=True))
 				print(lpips)
 				totssim += ssim
 				totmse += mse
