@@ -228,7 +228,7 @@ if __name__ == "__main__":
 			path = testbed.nerf.training.dataset.paths[idx]
 			flat_extrinsics = np.array(extrinsics).flatten()
 			extrinsics_kitti.append(flat_extrinsics)
-			print((path, flat_extrinsics))
+			# print((path, flat_extrinsics))
 		
 		with open(args.extrinsics_export_path, "w") as f:
 			for extrinsics in extrinsics_kitti:
