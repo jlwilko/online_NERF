@@ -1,36 +1,108 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import glob
 
-results = pd.read_csv("results.csv")
-print(results)
-print(results.dtypes)
+def plot_stats_rot_noise(df):
+	df = df.drop(columns=["datetime"])
+	trans_df = df[df["trans_noise"] == 0]
+	noopt = trans_df[trans_df["extrinsics_optimised"] == False]
+	opt = trans_df[trans_df["extrinsics_optimised"] == True]
 
-noopt = results[results["extrinsics optimised"] == " False"]
-opt = results[results["extrinsics optimised"] == " True"]
+	noopt = noopt.groupby("rot_noise").mean()
+	opt = opt.groupby("rot_noise").mean()
 
-noopt = noopt[noopt["rot_noise"] == 0]
-opt = opt[opt["rot_noise"] == 0]
+	plt.figure()
+	noopt["psnr"].plot(label="Optimised")
+	opt["psnr"].plot(label="Noisy")
+	plt.xlabel("Rotation noise sigma (m)")
+	plt.ylabel("PSNR (dB)")
+	plt.title('PSNR with rotational noise')
+	plt.grid()
+	plt.xlim([0, 4])
+	plt.ylim([15, 30])
+	plt.legend()
 
-noopt = noopt.groupby("trans_noise").mean()
-opt = opt.groupby("trans_noise").mean()
+	plt.figure()
+	noopt["ssim"].plot(label="Optimised")
+	opt["ssim"].plot(label="Noisy")
+	plt.xlabel("Rotation noise sigma (m)")
+	plt.ylabel("SSIM")
+	plt.title('SSIM with rotational noise')
+	plt.grid()
+	plt.xlim([0, 4])
+	plt.ylim([0, 1])
+	plt.legend()
+
+	plt.figure()
+	opt["lpips"].plot(label="Optimised")
+	noopt["lpips"].plot(label="Noisy")
+	plt.xlabel("Rotation noise sigma (m)")
+	plt.ylabel("LPIPS")
+	plt.title('LPIPS with rotational noise')
+	plt.grid()
+	plt.xlim([0, 4])
+	plt.ylim([0, 1])
+	plt.legend()
+
+def plot_stats_trans_noise(df):
+	df = df.drop(columns=["datetime"])
+	trans_df = df[df["rot_noise"] == 0]
+	noopt = trans_df[trans_df["extrinsics_optimised"] == False]
+	opt = trans_df[trans_df["extrinsics_optimised"] == True]
+
+	noopt = noopt.groupby("trans_noise").mean()
+	opt = opt.groupby("trans_noise").mean()
+
+	plt.figure()
+	noopt["psnr"].plot(label="Optimised")
+	opt["psnr"].plot(label="Noisy")
+	plt.xlabel("Translation noise sigma (m)")
+	plt.ylabel("PSNR (dB)")
+	plt.title('PSNR with translational noise')
+	plt.grid()
+	plt.xlim([0, 0.4])
+	plt.ylim([15, 30])
+	plt.legend()
+
+	plt.figure()
+	noopt["ssim"].plot(label="Optimised")
+	opt["ssim"].plot(label="Noisy")
+	plt.xlabel("Translation noise sigma (m)")
+	plt.ylabel("SSIM")
+	plt.title('SSIM with translational noise')
+	plt.grid()
+	plt.xlim([0, 0.4])
+	plt.ylim([0, 1])
+	plt.legend()
+
+	plt.figure()
+	opt["lpips"].plot(label="Optimised")
+	noopt["lpips"].plot(label="Noisy")
+	plt.xlabel("Translation noise sigma (m)")
+	plt.ylabel("LPIPS")
+	plt.title('LPIPS with translational noise')
+	plt.grid()
+	plt.xlim([0, 0.4])
+	plt.ylim([0, 1])
+	plt.legend()
 
 
-print(noopt)
-print(opt)
 
-noopt["psnr"].plot(label="Noisy")
-opt["psnr"].plot(label="Optimised")
-plt.xlabel("Translation noise sigma (m)")
-plt.ylabel("PSNR (dB)")
-plt.title('Comparing PSNR for optimised and non-optimised extrinsics')
-plt.legend()
+if __name__ == "__main__":
+	print("Plotting results...")
 
-plt.figure()
-noopt["ssim"].plot()
-opt["ssim"].plot()
-plt.xlabel("Translation noise sigma (m)")
-plt.ylabel("SSIM")
-plt.title('Comparing SSIM for optimised and non-optimised extrinsics')
-plt.legend()
-plt.show()
+	plt.rcParams.update({
+		"text.usetex": True,
+		'font.size': 16	
+	})
+	dfs = []
+	for filename in glob.glob("data/lfodo/core/seq*/results.csv"):
+		dfs.append(pd.read_csv(filename))
+	df = pd.concat(dfs)
+	print(df.columns)
 
+	plot_stats_trans_noise(df)
+	plot_stats_rot_noise(df)
+	plt.show()
+
+	# df = pd.read_csv("results.csv")
