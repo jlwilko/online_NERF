@@ -17,5 +17,5 @@ python3 /volume/scripts/incremental_nerf.py \
 	--sequence $seq_no \
 	--initial_images 10 \
 	--n_steps 5000 \
-	--addition_algorithm adaptive
+	--addition_algorithm temporal
 

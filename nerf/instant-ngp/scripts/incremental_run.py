@@ -302,6 +302,7 @@ if __name__ == "__main__":
 				maxpsnr = psnr if psnr>maxpsnr else maxpsnr
 				totcount = totcount+1
 				t.set_postfix(psnr = totpsnr/(totcount or 1))
+				print(json.dumps({'image_no':i, 'ssim':ssim, 'psnr':psnr, 'mse':mse, 'lpips':lpips}))
 
 		psnr_avgmse = mse2psnr(totmse/(totcount or 1))
 		psnr = totpsnr/(totcount or 1)

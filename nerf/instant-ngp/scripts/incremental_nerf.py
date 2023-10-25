@@ -112,9 +112,13 @@ def train_nerf(train_path, n_steps, test_path, save_model=False, model_path=""):
 --save_snapshot incremental/{model_path}"""
 # --numerical_results_path init_results.csv"""
 	command = command.split()
-	print(command)
+	# print(command)
 	# os.system(command)
-	subprocess.run(command, stdout=subprocess.PIPE)
+	result = subprocess.run(command, stdout=subprocess.PIPE)
+	lines = result.stdout.decode("utf-8").split("\n")
+	results_lines = list(json.loads(x) for x in filter(lambda x: "image_no" in x, lines))
+	return results_lines
+
 
 def render_pretrained_nerf(model_path, transforms):
 	command = f"""python3 /volume/scripts/incremental_run.py
@@ -122,7 +126,7 @@ def render_pretrained_nerf(model_path, transforms):
 --test_transforms {transforms}
 """
 	command = command.split()
-	print(command)
+	# print(command)
 	result = subprocess.run(command, stdout=subprocess.PIPE)
 	lines = result.stdout.decode("utf-8").split("\n")
 	# print(lines)
@@ -132,6 +136,7 @@ def render_pretrained_nerf(model_path, transforms):
 
 if __name__ == "__main__":
 	args = parse_args()
+	print(f"using algorithm {args.addition_algorithm}")
 	print(os.getcwd())
 
 	# Load the sequence transforms.json and get the list of frames to easily generate new ones
@@ -147,6 +152,7 @@ if __name__ == "__main__":
 	current_training_poses = list(range(args.initial_images))
 	last_added_pose = max(current_training_poses) # keep track of the last pose added to the training set
 	training_stats = {}
+	results_archive = []
 	total_training_time = 0
 
 	# start a timer
@@ -158,6 +164,8 @@ if __name__ == "__main__":
 	stats = render_pretrained_nerf("current_model.ingp", next_transforms)
 	print(f"PSNR: {stats['PSNR']}, SSIM: {stats['SSIM']}, LPIPS: {stats['LPIPS']}")
 	training_stats[last_added_pose] = stats
+
+	dist_since_add_pose = 0
 
 	for idx in range(args.initial_images, len(loader.transforms)-1):
 		print(f"Incoming image {idx}, path {loader.transforms[idx]['file_path']}")
@@ -175,12 +183,24 @@ if __name__ == "__main__":
 			add_image = True
 
 		elif args.addition_algorithm == "temporal":
+			# check that this gives good results for the numbers we are looking at 
+			add_image = idx % 11 == 0
 			print("Checking using temporal algorithm")
-			
-			pass
+
 		elif args.addition_algorithm == "distance":
 			print("Checking using distance algorithm")
-			pass
+
+			# find distance between this pose and last pose
+			prev_t = np.array(loader.transforms[idx-1]["transform_matrix"])[0:3, 3]
+			curr_t = np.array(loader.transforms[idx]["transform_matrix"])[0:3, 3]
+			dist_since_add_pose += np.linalg.norm(curr_t - prev_t)
+			print(f"{dist_since_add_pose}=")
+
+			# if the distance is greater than some threshold, add the image and retrain the nerf
+			if dist_since_add_pose > 0.55:
+				add_image = True
+				dist_since_add_pose = 0
+
 		else:
 			assert args.addition_algorithm == "adaptive"
 			print("Checking using adaptive algorithm")
@@ -208,7 +228,7 @@ if __name__ == "__main__":
 			# retrain the nerf 
 			# save the nerf to a new model path
 			start_time = time.perf_counter()
-			train_nerf(curr_transforms, args.n_steps, "transforms_test.json", save_model=True, model_path="current_model.ingp")
+			test_stats = train_nerf(curr_transforms, args.n_steps, "transforms_test.json", save_model=True, model_path="current_model.ingp")
 			total_training_time += time.perf_counter() - start_time
 			stats = render_pretrained_nerf("current_model.ingp", curr_transforms)
 			training_stats[last_added_pose] =  stats
@@ -216,11 +236,19 @@ if __name__ == "__main__":
 			print(f"\tTotal training time so far is {total_training_time} seconds")
 			print(f"\t")
 
+			# write current statistics to a csv file
+			# time obtained
+			# current training set + size of training set 
+			# current PSNR/SSIM/LPIPS of the nerf on the test set
+			tmp = dict({"training_time": total_training_time, "training_set": current_training_poses.copy(), "training_set_size": len(current_training_poses), "last_added_pose": last_added_pose, "test_set_stats": test_stats})
 
+			results_archive.append(tmp)
+			# print("LOOK FOR THIS U BIG DUMB DUMB", end="")
+			# print(results_archive)
 
-
-
-
+	
+	with open(os.path.join("incremental", f"inc_{args.addition_algorithm}_results.json"), "w") as f:
+		json.dump(results_archive, f, indent=2)
 
 		# check the PSNR/SSIM/LPIPS of the nerf on the next M(1) images to see if we should add this image to the training set
 		# alternatively choose whether to add this image based on simply temporal or distance based metrics
