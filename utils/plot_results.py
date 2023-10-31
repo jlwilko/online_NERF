@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 import glob
 
 def plot_stats_rot_noise(df):
@@ -51,7 +52,7 @@ def plot_stats_rot_noise(df):
 	plt.savefig("../writing/img/lpips_rot_noise.eps", bbox_inches='tight')
 
 def plot_stats_trans_noise(df):
-	df = df.drop(columns=["datetime"])
+	df = df.drop(columns=["datetime"])	
 	trans_df = df[df["rot_noise"] == 0]
 	noopt = trans_df[trans_df["extrinsics_optimised"] == False]
 	opt = trans_df[trans_df["extrinsics_optimised"] == True]
@@ -98,6 +99,26 @@ def plot_stats_trans_noise(df):
 	plt.legend()
 	plt.savefig("../writing/img/lpips_trans_noise.eps", bbox_inches='tight')
 
+def plot_ate_results():
+	x = np.array([0.0, 0.05, 0.1, 0.2, 0.3, 0.4])
+	y = np.array([0.000, 0.0318, 0.0426,0.113,0.172,0.218])
+	z = np.array([0.02,0.0196,0.0234,0.0268,0.0306,0.0545])
+
+	plt.figure()
+	# plot x v y
+	plt.plot(x, y, label="Noisy")
+	plt.plot(x, z, label="Optimised")
+	plt.xlabel("Translation noise sigma (m)")
+	plt.ylabel("ATE (m)")
+	plt.title('ATE with translational noise')
+	plt.grid()
+
+	# plt.savefig("../writing/img/ate.eps", bbox_inches='tight')
+
+
+
+
+	return
 
 
 if __name__ == "__main__":
@@ -112,8 +133,9 @@ if __name__ == "__main__":
 	df = pd.concat(dfs)
 	print(df.columns)
 
-	plot_stats_trans_noise(df)
-	plot_stats_rot_noise(df)
+	# plot_stats_trans_noise(df)
+	# plot_stats_rot_noise(df)
+	plot_ate_results()
 	plt.show()
 
 	# df = pd.read_csv("results.csv")
